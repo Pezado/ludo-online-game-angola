@@ -12,7 +12,7 @@ interface LudoStore {
 
 export const useRenewStore = create<LudoStore>((set) => ({
   user: null,
-  theme: 'dark',
+  theme: 'light',
   currentMatch: null,
   setUser: (user) => set({ user }),
   setCurrentMatch: (currentMatch) => set({ currentMatch }),
