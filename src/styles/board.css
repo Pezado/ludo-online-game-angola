@@ -1,0 +1,16 @@
+.board-tile { transition: background-color .15s ease, box-shadow .15s ease; }
+.board-tile .piece { width:1rem; height:1rem; }
+.board-tile.highlight { box-shadow: 0 0 0 3px rgba(0,200,83,0.12), inset 0 0 8px rgba(0,0,0,0.08); }
+
+/* Adjustments for the 15x15 grid sizing */
+.grid-cols-15 { grid-template-columns: repeat(15, minmax(0, 1fr)); }
+
+@media (max-width: 480px) {
+  .board-tile .piece { width:0.8rem; height:0.8rem }
+}
+
+/* Color tweaks to match identity but give Ludo carpet feeling */
+.ludo-host-yard { background: linear-gradient(135deg, rgba(255,0,0,0.06), rgba(255,0,0,0.03)); border-color: rgba(255,0,0,0.18); }
+.ludo-guest-yard { background: linear-gradient(135deg, rgba(0,128,255,0.06), rgba(0,128,255,0.03)); border-color: rgba(0,128,255,0.18); }
+.ludo-track { background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)); }
+.ludo-center { background: radial-gradient(circle at center, rgba(255,215,0,0.08), transparent 40%); }
