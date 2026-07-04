@@ -1,0 +1,24 @@
+{
+  "rules": {
+    ".read": true,
+    ".write": true,
+    "users": {
+      ".indexOn": ["email"]
+    },
+    "investments": {
+      ".indexOn": ["userId"]
+    },
+    "transactions": {
+      ".indexOn": ["userId"]
+    },
+    "notifications": {
+      ".indexOn": ["userId"]
+    },
+    "messages": {
+      ".indexOn": ["userId"]
+    },
+    "vouchers": {
+      ".indexOn": ["code"]
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "Ludo Angola Pro",
+  "description": "Arena P2P de LUDO em tempo real para Angola. Joga com regras tradicionais angolanas, cria desafios com apostas personalizadas, conversa no chat encriptado e saca via IBAN.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

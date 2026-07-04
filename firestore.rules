@@ -1,0 +1,185 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: userId (Firebase Auth UID)
+    // Fields:
+    //   - name: string (required, 2-100 chars)
+    //   - email: string (required, valid format)
+    //   - phone: string (optional)
+    //   - province: string (optional)
+    //   - iban: string (optional)
+    //   - balanceAOA: number (required, >= 0)
+    //   - balanceUSD: number (required, >= 0)
+    //   - type: string (required, 'PRO' | 'BETA')
+    //   - profile: string (optional, 'Conservador' | 'Moderado' | 'Agressivo')
+    //   - onboarded: bool (required)
+    //   - quizCompleted: bool (required)
+    //   - role: string (required, 'user' | 'admin')
+    //
+    // Collection: vouchers
+    // Document ID: auto-generated
+    // Fields:
+    //   - code: string (required, unique)
+    //   - amount: number (required, > 0)
+    //   - currency: string (required, 'AOA' | 'USD')
+    //   - used: bool (required)
+    //   - usedBy: string (optional)
+    //   - usedAt: string (optional, ISO 8601)
+    //   - createdAt: string (required, ISO 8601)
+    //   - expiresAt: string (required, ISO 8601)
+    //
+    // Collection: investments
+    // Document ID: auto-generated
+    // Fields:
+    //   - userId: string (required, matches owner)
+    //   - planId: string (required)
+    //   - amount: number (required, > 0)
+    //   - currency: string (required, 'AOA' | 'USD')
+    //   - startDate: string (required, ISO 8601)
+    //   - endDate: string (required, ISO 8601)
+    //   - currentProfit: number (required, >= 0)
+    //   - status: string (required, 'active' | 'completed')
+    //
+    // Collection: transactions
+    // Document ID: auto-generated
+    // Fields:
+    //   - userId: string (required, matches owner)
+    //   - type: string (required, 'deposit' | 'withdrawal' | 'profit')
+    //   - amount: number (required, > 0)
+    //   - currency: string (required, 'AOA' | 'USD')
+    //   - date: string (required, ISO 8601)
+    //   - status: string (required, 'completed' | 'pending' | 'failed')
+    //   - method: string (optional)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return true; // Manual session management as per user request
+    }
+
+    function isAdmin(userId) {
+      return get(/databases/$(database)/documents/users/$(userId)).data.role == 'admin';
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function isValidDateString(dateStr) {
+      return dateStr is string && dateStr.matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.*Z?$");
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['name', 'email', 'password', 'balanceAOA', 'balanceUSD', 'type', 'onboarded', 'quizCompleted', 'role']) &&
+             data.name is string && data.name.size() >= 2 && data.name.size() <= 100 &&
+             isValidEmail(data.email) &&
+             data.password is string && data.password.size() >= 4 &&
+             data.balanceAOA is number && data.balanceAOA >= 0 &&
+             data.balanceUSD is number && data.balanceUSD >= 0 &&
+             data.type in ['PRO', 'BETA'] &&
+             data.role in ['user', 'admin'] &&
+             data.onboarded is bool &&
+             data.quizCompleted is bool;
+    }
+
+    function isValidInvestment(data) {
+      return data.keys().hasAll(['userId', 'planId', 'amount', 'currency', 'startDate', 'endDate', 'currentProfit', 'status']) &&
+             data.userId is string &&
+             data.amount is number && data.amount > 0 &&
+             data.currency in ['AOA', 'USD'] &&
+             isValidDateString(data.startDate) &&
+             isValidDateString(data.endDate) &&
+             data.currentProfit is number && data.currentProfit >= 0 &&
+             data.status in ['active', 'completed'];
+    }
+
+    function isValidTransaction(data) {
+      return data.keys().hasAll(['userId', 'type', 'amount', 'currency', 'date', 'status']) &&
+             data.userId is string &&
+             data.type in ['deposit', 'withdrawal', 'profit'] &&
+             data.amount is number &&
+             data.currency in ['AOA', 'USD'] &&
+             isValidDateString(data.date) &&
+             data.status in ['completed', 'pending', 'failed'];
+    }
+
+    function isValidVoucher(data) {
+      return data.keys().hasAll(['code', 'amount', 'currency', 'used', 'createdAt', 'expiresAt']) &&
+             data.code is string && data.code.size() >= 7 &&
+             data.amount is number && data.amount > 0 &&
+             data.currency in ['AOA', 'USD'] &&
+             data.used is bool &&
+             isValidDateString(data.createdAt) &&
+             isValidDateString(data.expiresAt);
+    }
+
+    function isValidMessage(data) {
+      return data.keys().hasAll(['userId', 'sender', 'text', 'timestamp']) &&
+             data.userId is string &&
+             data.sender in ['user', 'admin'] &&
+             data.text is string &&
+             (!data.keys().hasAny(['attachmentUrl']) || data.attachmentUrl is string) &&
+             (!data.keys().hasAny(['attachmentType']) || data.attachmentType is string);
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      // Allow read for login queries and session sync
+      allow read: if true;
+      
+      // Allow create for registration
+      allow create: if isValidUser(request.resource.data);
+                       
+      // Allow update for balance/profile changes
+      allow update: if isValidUser(request.resource.data);
+    }
+
+    match /investments/{investmentId} {
+      allow read: if true;
+      allow create: if isValidInvestment(request.resource.data);
+      allow update: if isValidInvestment(request.resource.data);
+      allow delete: if true;
+    }
+
+    match /transactions/{transactionId} {
+      allow read: if true;
+      allow create: if isValidTransaction(request.resource.data);
+      allow update: if true;
+      allow delete: if true;
+    }
+
+    match /messages/{messageId} {
+      allow read: if true;
+      allow create: if isValidMessage(request.resource.data);
+      allow update: if true;
+    }
+
+    match /notifications/{notifId} {
+      allow read: if true;
+      allow write: if true; // In a real app, check isAdmin
+    }
+
+    match /vouchers/{voucherId} {
+      allow read: if true;
+      allow create: if isValidVoucher(request.resource.data);
+      allow update: if isValidVoucher(request.resource.data);
+      allow delete: if true;
+    }
+  }
+}

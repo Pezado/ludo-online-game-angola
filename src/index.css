@@ -1,0 +1,89 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", "Manrope", ui-sans-serif, system-ui, sans-serif;
+  
+  --color-primary: #00C853;
+  --color-secondary: #0288D1;
+  --color-accent: #FFD700;
+  --color-background: #0A192F;
+  --color-surface: #121212;
+  --color-danger: #FF3B5C;
+  --color-success: #00C853;
+}
+
+@layer base {
+  :root {
+    --bg-color: #F8F9FA;
+    --text-color: #0A192F;
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(0, 0, 0, 0.1);
+    --border-color: rgba(0, 0, 0, 0.05);
+  }
+
+  .dark {
+    --bg-color: #0A192F;
+    --text-color: #FFFFFF;
+    --glass-bg: rgba(18, 18, 18, 0.6);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --border-color: rgba(255, 255, 255, 0.05);
+  }
+
+  body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    @apply antialiased selection:bg-primary/30 transition-colors duration-300 overflow-x-hidden;
+    font-family: var(--font-sans);
+  }
+}
+
+@layer utilities {
+  .glass {
+    background-color: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+  }
+
+  .border-adaptive {
+    border-color: var(--border-color);
+  }
+  
+  .glass-dark {
+    background-color: rgba(10, 25, 47, 0.8);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary;
+  }
+
+  .solar-gradient {
+    background: radial-gradient(circle at top right, rgba(0, 200, 83, 0.15), transparent 40%),
+                radial-gradient(circle at bottom left, rgba(2, 136, 209, 0.15), transparent 40%);
+  }
+
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 10px;
+}

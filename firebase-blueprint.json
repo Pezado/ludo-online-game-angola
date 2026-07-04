@@ -1,0 +1,127 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "Extended user data stored in Firestore",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Full name" },
+        "email": { "type": "string", "description": "Email address" },
+        "password": { "type": "string", "description": "User password (manual auth)" },
+        "phone": { "type": "string", "description": "Phone number" },
+        "province": { "type": "string", "description": "Province in Angola" },
+        "iban": { "type": "string", "description": "Bank IBAN" },
+        "balanceAOA": { "type": "number", "description": "Balance in Kwanza" },
+        "balanceUSD": { "type": "number", "description": "Balance in USD" },
+        "type": { "type": "string", "enum": ["PRO", "BETA"] },
+        "profile": { "type": "string", "enum": ["Conservador", "Moderado", "Agressivo"] },
+        "onboarded": { "type": "boolean" },
+        "quizCompleted": { "type": "boolean" },
+        "role": { "type": "string", "enum": ["user", "admin"] }
+      },
+      "required": ["name", "email", "password", "balanceAOA", "balanceUSD", "type", "onboarded", "quizCompleted", "role"]
+    },
+    "Voucher": {
+      "title": "Deposit Voucher",
+      "description": "One-time use voucher for deposits",
+      "type": "object",
+      "properties": {
+        "code": { "type": "string" },
+        "amount": { "type": "number" },
+        "currency": { "type": "string", "enum": ["AOA", "USD"] },
+        "used": { "type": "boolean" },
+        "usedBy": { "type": "string" },
+        "usedAt": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "expiresAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["code", "amount", "currency", "used", "createdAt", "expiresAt"]
+    },
+    "Investment": {
+      "title": "Active Investment",
+      "description": "An investment plan active for a user",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "planId": { "type": "string" },
+        "amount": { "type": "number" },
+        "currency": { "type": "string", "enum": ["AOA", "USD"] },
+        "startDate": { "type": "string", "format": "date-time" },
+        "endDate": { "type": "string", "format": "date-time" },
+        "currentProfit": { "type": "number" },
+        "status": { "type": "string", "enum": ["active", "completed"] }
+      },
+      "required": ["userId", "planId", "amount", "currency", "startDate", "endDate", "currentProfit", "status"]
+    },
+    "Transaction": {
+      "title": "Financial Transaction",
+      "description": "Deposit, withdrawal or profit record",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "type": { "type": "string", "enum": ["deposit", "withdrawal", "profit"] },
+        "amount": { "type": "number" },
+        "currency": { "type": "string", "enum": ["AOA", "USD"] },
+        "date": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["completed", "pending", "failed"] },
+        "method": { "type": "string" }
+      },
+      "required": ["userId", "type", "amount", "currency", "date", "status"]
+    },
+    "Message": {
+      "title": "Chat Message",
+      "description": "Private message between user and admin",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "sender": { "type": "string", "enum": ["user", "admin"] },
+        "text": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "attachmentUrl": { "type": "string", "description": "URL to uploaded file" },
+        "attachmentType": { "type": "string", "description": "MIME type of attachment" },
+        "read": { "type": "boolean" }
+      },
+      "required": ["userId", "sender", "text", "timestamp"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "System notification for user",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "type": { "type": "string" },
+        "read": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "title", "message", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profile data"
+    },
+    "/investments/{investmentId}": {
+      "schema": "Investment",
+      "description": "User investments"
+    },
+    "/transactions/{transactionId}": {
+      "schema": "Transaction",
+      "description": "User transaction history"
+    },
+    "/messages/{messageId}": {
+      "schema": "Message",
+      "description": "Private chat messages"
+    },
+    "/vouchers/{voucherId}": {
+      "schema": "Voucher",
+      "description": "Deposit vouchers"
+    },
+    "/notifications/{notifId}": {
+      "schema": "Notification",
+      "description": "System notifications"
+    }
+  }
+}
